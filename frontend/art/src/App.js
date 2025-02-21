@@ -8,6 +8,7 @@ import Login from './components/Login';
 import Profile from './components/Profile';
 import ScheduleEmail from './components/ScheduleEmail';
 import ScheduledEmails from './components/ScheduledEmails';
+import UpdateProfile from './components/UpdateProfile';
 
 function App() {
   return (
@@ -17,8 +18,11 @@ function App() {
         <Route path="/register" element={<Register/>} />
         <Route path="/login" element={<Login/>} />
         <Route path="/Profile" element={<Profile/>} />
+        <Route path="/update_profile" element={<UpdateProfile/>} />
         <Route path="/schedule_emails" element={<ScheduleEmail/>} />
         <Route path="/scheduled_emails" element={<ScheduledEmails/>} />
+
+        
       </Routes>
     </Router>
   );

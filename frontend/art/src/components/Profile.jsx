@@ -20,6 +20,7 @@ const Profile = () => {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
 
+        console.log("User Data:", response.data); // Debugging
         setUser(response.data);
       } catch (error) {
         console.error("Error fetching user:", error);
@@ -65,16 +66,37 @@ const Profile = () => {
       <div style={styles.profileBox}>
         {user ? (
           <>
-            <h2 style={styles.heading}>Profile</h2>
-            <p><strong>Username:</strong> {user.username}</p>
-            <p><strong>Email:</strong> {user.email}</p>
-            <button onClick={() => navigate('/schedule_emails')}style={styles.button}>ScheduleEmail</button>    <br></br>
-            <button onClick={handleLogout} style={styles.button}>Logout</button>
+            {/* First Row: Profile Image & User Info */}
+            <div style={styles.profileHeader}>
+              <img 
+                src={user.profile_picture || "https://via.placeholder.com/150"} 
+                alt="Profile" 
+                style={styles.profileImage}
+              />
+              <div style={styles.userInfo}>
+                <h2 style={styles.heading}>{user.username}</h2>
+                <p style={styles.email}><strong>Email:</strong> {user.email}</p>
+              </div>
+            </div>
+
+            {/* Second Row: Buttons */}
+            <div style={styles.buttonContainer}>
+              <button style={styles.button} onClick={() => navigate("/update_profile")}>
+                Update Profile
+              </button>
+              <button style={styles.button} onClick={() => navigate("/schedule_emails")}>
+                Schedule Email
+              </button>
+              <button style={styles.logoutButton} onClick={handleLogout}>
+                Logout
+              </button>
+            </div>
           </>
         ) : (
           <p>Loading...</p>
         )}
       </div>
+      
       <div style={styles.emailBox}>
         <ScheduledEmails />
       </div>
@@ -93,13 +115,66 @@ const styles = {
     color: "white",
   },
   profileBox: {
-    width: "30%",
+    width: "40%",
     backgroundColor: "#222",
     padding: "20px",
     borderRadius: "10px",
     boxShadow: "0 0 10px rgba(255, 255, 255, 0.2)",
     textAlign: "center",
-    marginRight: "20px",
+  },
+  profileHeader: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingBottom: "20px",
+    borderBottom: "1px solid #555",
+  },
+  profileImage: {
+    width: "100px",
+    height: "100px",
+    borderRadius: "50%",
+    objectFit: "cover",
+    border: "2px solid white",
+  },
+  userInfo: {
+    textAlign: "left",
+    marginLeft: "20px",
+    flex: 1,
+  },
+  heading: {
+    fontSize: "22px",
+    fontWeight: "bold",
+    marginBottom: "5px",
+  },
+  email: {
+    fontSize: "16px",
+  },
+  buttonContainer: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginTop: "20px",
+  },
+  button: {
+    flex: 1,
+    padding: "10px",
+    backgroundColor: "#007bff",
+    color: "white",
+    fontSize: "14px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    margin: "5px",
+  },
+  logoutButton: {
+    flex: 1,
+    padding: "10px",
+    backgroundColor: "#f00",
+    color: "white",
+    fontSize: "14px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    margin: "5px",
   },
   emailBox: {
     width: "40%",
@@ -107,21 +182,7 @@ const styles = {
     padding: "20px",
     borderRadius: "10px",
     boxShadow: "0 0 10px rgba(255, 255, 255, 0.2)",
-  },
-  heading: {
-    fontSize: "24px",
-    fontWeight: "bold",
-    marginBottom: "15px",
-  },
-  button: {
-    padding: "10px",
-    backgroundColor: "#f00",
-    color: "white",
-    fontSize: "16px",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-    marginTop: "10px",
+    marginLeft: "20px",
   },
 };
 

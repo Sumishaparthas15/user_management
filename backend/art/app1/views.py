@@ -11,6 +11,8 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail
 from .tasks import send_scheduled_email
+from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
+from rest_framework.parsers import MultiPartParser, FormParser
 
 User = get_user_model()
 
@@ -23,11 +25,15 @@ def get_tokens_for_user(user):
     }
 class RefreshTokenView(TokenRefreshView):
     pass
+class CustomLoginThrottle(UserRateThrottle):
+    scope = 'login' 
+
 class RegisterView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [AnonRateThrottle]
 
     def post(self, request):
-        print("Received Data:", request.data)  # Log incoming data
+        print("Received Data:", request.data)  
 
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
@@ -51,6 +57,7 @@ class RegisterView(APIView):
 
 class VerifyOTPView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [AnonRateThrottle] 
 
     def post(self, request):
         email = request.data.get("email")
@@ -69,6 +76,7 @@ class VerifyOTPView(APIView):
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
 class LoginView(views.APIView):
+    throttle_classes = [CustomLoginThrottle] 
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
@@ -79,7 +87,7 @@ class LoginView(views.APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class LogoutView(APIView):
-    
+    throttle_classes = [UserRateThrottle]
 
     def post(self, request):
         try:
@@ -93,15 +101,37 @@ class LogoutView(APIView):
 
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_classes = [UserRateThrottle]
 
     def get(self, request):
         serializer = UserProfileSerializer(request.user, context={"request": request})
         return Response(serializer.data)
     
+
+class UpdateProfilePictureView(generics.UpdateAPIView):
+    serializer_class = UserProfileSerializer
+    permission_classes = [IsAuthenticated]
+    parser_classes = (MultiPartParser, FormParser)  # Allow file uploads
+
+    def get_object(self):
+        """Ensure each user updates only their own profile"""
+        return self.request.user  # Returns the logged-in user
+
+    def patch(self, request, *args, **kwargs):
+        """Handles profile picture update"""
+        user = self.get_object()
+        if 'profile_picture' not in request.data:
+            return Response({"error": "No image provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.profile_picture = request.data['profile_picture']
+        user.save()
+        return Response({"message": "Profile picture updated successfully", "profile_picture": user.profile_picture.url}, status=status.HTTP_200_OK)  
+    
 class ScheduleEmailView(generics.CreateAPIView):
     queryset = ScheduledEmail.objects.all()
     serializer_class = ScheduledEmailSerializer
-    permission_classes = [IsAuthenticated]  # Ensure only authenticated users can access
+    permission_classes = [IsAuthenticated]  
+    throttle_classes = [UserRateThrottle]
 
     def perform_create(self, serializer):
         print("Received data:", self.request.data)  # Debugging
@@ -117,9 +147,11 @@ class ScheduleEmailView(generics.CreateAPIView):
         )
 
         return Response({"message": "Email scheduled successfully."}, status=status.HTTP_201_CREATED)
-class ScheduledEmailListCreateView(generics.ListCreateAPIView):  # ✅ Supports GET & POST
+    
+class ScheduledEmailListCreateView(generics.ListCreateAPIView):  
     serializer_class = ScheduledEmailSerializer
     permission_classes = [IsAuthenticated]
+    throttle_classes = [UserRateThrottle]
 
     def get_queryset(self):
         return ScheduledEmail.objects.filter(user=self.request.user)
@@ -127,6 +159,7 @@ class ScheduledEmailListCreateView(generics.ListCreateAPIView):  # ✅ Supports 
 class ScheduledEmailDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ScheduledEmailSerializer
     permission_classes = [IsAuthenticated]
+    throttle_classes = [UserRateThrottle]
 
     def get_queryset(self):
         return ScheduledEmail.objects.filter(user=self.request.user)
@@ -137,13 +170,14 @@ class SendPendingEmails(APIView):
     This can also be automated using Celery.
     """
     permission_classes = [IsAuthenticated]
+    throttle_classes = [UserRateThrottle]
 
     def get(self, request):
         pending_emails = ScheduledEmail.objects.filter(is_sent=False, scheduled_time__lte=now())
         sent_count = 0
 
         for email in pending_emails:
-            # Simulate sending the email (replace with actual send logic)
+            
             print(f"Sending email to {email.recipient_email}")
             email.is_sent = True
             email.save()
@@ -152,6 +186,6 @@ class SendPendingEmails(APIView):
         return Response({"message": f"{sent_count} emails sent."})
     
 def some_view(request):
-    from .tasks import send_scheduled_email  # Import inside the function
+    from .tasks import send_scheduled_email  
     send_scheduled_email.delay()
     return render(request, 'index.html')

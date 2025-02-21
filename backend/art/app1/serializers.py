@@ -2,6 +2,8 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate
 from .models import *
+import bleach
+
 User = get_user_model()
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -10,7 +12,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'password2','profile_picture']
+        fields = ['username', 'email', 'password', 'password2', 'profile_picture']
         extra_kwargs = {'password': {'write_only': True}}
 
     def validate(self, data):
@@ -19,8 +21,14 @@ class RegisterSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        validated_data.pop('password2')  
-        user = User.objects.create_user(**validated_data)
+        validated_data.pop('password2')  # Remove password2 since it's not stored in DB
+        profile_picture = validated_data.pop('profile_picture', None)
+        
+        user = User.objects.create_user(**validated_data)  # Securely create user
+        if profile_picture:
+            user.profile_picture = profile_picture
+            user.save()  # Save profile picture if provided
+        
         return user
 
 class LoginSerializer(serializers.Serializer):
