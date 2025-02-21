@@ -8,7 +8,7 @@ function Home() {
       <h1>Home</h1>
       <button onClick={() => navigate('/login')}>Sign In</button>
       <button onClick={() => navigate('/register')}>Sign Up</button>
-      <button>just for checking</button>
+      
     </div>
   )
 }
