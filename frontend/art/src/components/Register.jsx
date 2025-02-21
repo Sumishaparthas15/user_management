@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import DOMPurify from "dompurify"; 
 
 function Register() {
   const navigate = useNavigate();
@@ -18,7 +19,8 @@ function Register() {
   const [email, setEmail] = useState("");
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const sanitizedValue = DOMPurify.sanitize(e.target.value); // Sanitize input
+    setFormData({ ...formData, [e.target.name]: sanitizedValue });
   };
 
   const handleRegister = async (e) => {

@@ -16,19 +16,30 @@ class RegisterSerializer(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True}}
 
     def validate(self, data):
+        # Sanitize username and email to prevent XSS
+        data['username'] = bleach.clean(data['username'])
+        data['email'] = bleach.clean(data['email'])
+
         if data['password'] != data['password2']:
             raise serializers.ValidationError({"password": "Passwords do not match."})
+
         return data
 
     def create(self, validated_data):
         validated_data.pop('password2')  # Remove password2 since it's not stored in DB
         profile_picture = validated_data.pop('profile_picture', None)
         
-        user = User.objects.create_user(**validated_data)  # Securely create user
+        user = User(
+            username=validated_data['username'],
+            email=validated_data['email'],
+        )
+        user.set_password(validated_data['password'])  # Secure password storage
+        user.save()
+
         if profile_picture:
             user.profile_picture = profile_picture
             user.save()  # Save profile picture if provided
-        
+
         return user
 
 class LoginSerializer(serializers.Serializer):
@@ -36,8 +47,8 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
 
     def validate(self, data):
-        email = data.get("email")
-        password = data.get("password")
+        email = bleach.clean(data.get("email").strip())  # Sanitize email input
+        password = bleach.clean(data.get("password").strip())  # Sanitize password input
 
         if email and password:
             user = authenticate(username=email, password=password)

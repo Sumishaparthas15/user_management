@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import DOMPurify from 'dompurify';
 
 function Login() {
   const navigate = useNavigate();
@@ -10,32 +11,37 @@ function Login() {
   });
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const sanitizedValue = DOMPurify.sanitize(e.target.value); // Sanitize input
+    setFormData({ ...formData, [e.target.name]: sanitizedValue });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://127.0.0.1:8000/app1/login/', formData);
-  
+      const response = await axios.post('http://127.0.0.1:8000/app1/login/', formData, {
+        headers: {
+          'Content-Type': 'application/json',  // Secure headers
+        },
+      });
+
       // Extract access and refresh tokens correctly
-      const accessToken = response.data.tokens.access;
-      const refreshToken = response.data.tokens.refresh;
-  
-      // Store tokens in localStorage
-      localStorage.setItem('access_token', accessToken);
-      localStorage.setItem('refresh_token', refreshToken);
-  
-      // Set authorization header for future requests
-      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-  
-      alert("Login Successful!");
-      navigate('/profile');
+      const accessToken = response.data.tokens?.access;
+      const refreshToken = response.data.tokens?.refresh;
+
+      if (accessToken && refreshToken) {
+        localStorage.setItem('access_token', accessToken);
+        localStorage.setItem('refresh_token', refreshToken);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+        alert("Login Successful!");
+        navigate('/profile');
+      } else {
+        alert("Invalid login response");
+      }
     } catch (error) {
       console.error(error.response?.data || 'Login failed');
+      alert("Login failed. Please try again.");
     }
   };
-  
 
   return (
     <div style={styles.container}>

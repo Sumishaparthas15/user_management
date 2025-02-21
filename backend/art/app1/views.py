@@ -13,6 +13,7 @@ from django.core.mail import send_mail
 from .tasks import send_scheduled_email
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from rest_framework.parsers import MultiPartParser, FormParser
+from PIL import Image
 
 User = get_user_model()
 
@@ -106,27 +107,32 @@ class ProfileView(APIView):
     def get(self, request):
         serializer = UserProfileSerializer(request.user, context={"request": request})
         return Response(serializer.data)
-    
 
 class UpdateProfilePictureView(generics.UpdateAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
-    parser_classes = (MultiPartParser, FormParser)  # Allow file uploads
+    parser_classes = (MultiPartParser, FormParser)
 
     def get_object(self):
-        """Ensure each user updates only their own profile"""
-        return self.request.user  # Returns the logged-in user
+        return self.request.user
 
     def patch(self, request, *args, **kwargs):
-        """Handles profile picture update"""
         user = self.get_object()
-        if 'profile_picture' not in request.data:
+        if "profile_picture" not in request.data:
             return Response({"error": "No image provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-        user.profile_picture = request.data['profile_picture']
+        image = request.data["profile_picture"]
+
+        try:
+            img = Image.open(image)
+            img.verify()  # Check if valid image
+        except Exception:
+            return Response({"error": "Invalid image file"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.profile_picture = image
         user.save()
-        return Response({"message": "Profile picture updated successfully", "profile_picture": user.profile_picture.url}, status=status.HTTP_200_OK)  
-    
+        return Response({"message": "Profile picture updated successfully"})
+
 class ScheduleEmailView(generics.CreateAPIView):
     queryset = ScheduledEmail.objects.all()
     serializer_class = ScheduledEmailSerializer
