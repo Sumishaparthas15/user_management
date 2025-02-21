@@ -9,6 +9,7 @@ urlpatterns = [
      path('login/', LoginView.as_view(), name='login'),
      path("logout/", LogoutView.as_view(), name="logout"),
      path("refresh/", RefreshTokenView.as_view(), name="token_refresh"),
+     path('get-csrf-token/', get_csrf_token, name='get_csrf_token'),
 
     path("profile/", ProfileView.as_view(), name="profile"),
     path('profile1/update-picture/', UpdateProfilePictureView.as_view(), name='update-profile-picture'),

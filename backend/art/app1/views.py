@@ -14,6 +14,10 @@ from .tasks import send_scheduled_email
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from rest_framework.parsers import MultiPartParser, FormParser
 from PIL import Image
+from django.http import JsonResponse
+from django.middleware.csrf import get_token
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 User = get_user_model()
 
@@ -28,7 +32,8 @@ class RefreshTokenView(TokenRefreshView):
     pass
 class CustomLoginThrottle(UserRateThrottle):
     scope = 'login' 
-
+def get_csrf_token(request):
+    return JsonResponse({'csrfToken': get_token(request)})
 class RegisterView(APIView):
     permission_classes = [AllowAny]
     throttle_classes = [AnonRateThrottle]
@@ -75,7 +80,8 @@ class VerifyOTPView(APIView):
 
         except User.DoesNotExist:
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-
+        
+@method_decorator(csrf_exempt, name='dispatch') 
 class LoginView(views.APIView):
     throttle_classes = [CustomLoginThrottle] 
     def post(self, request):
