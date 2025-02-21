@@ -18,6 +18,7 @@ from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+import logging
 
 User = get_user_model()
 
@@ -105,12 +106,16 @@ class LogoutView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-
+logger = logging.getLogger(__name__)
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
     throttle_classes = [UserRateThrottle]
 
     def get(self, request):
+        logger.info(f"Authenticated user: {request.user}")  # Log user info
+        if not request.user.is_authenticated:
+            return Response({"error": "User is not authenticated"}, status=401)
+
         serializer = UserProfileSerializer(request.user, context={"request": request})
         return Response(serializer.data)
 
