@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import baseURL from "../config";
 
 const ScheduledEmails = () => {
     const [emails, setEmails] = useState([]);
@@ -14,7 +15,7 @@ const ScheduledEmails = () => {
     const fetchEmails = async () => {
         try {
             const token = localStorage.getItem("access_token");
-            const response = await axios.get("http://127.0.0.1:8000/app1/schedule_email/", {
+            const response = await axios.get(`${baseURL}/app1/schedule_email/`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setEmails(response.data);
@@ -27,7 +28,7 @@ const ScheduledEmails = () => {
     const handleDelete = async (id) => {
         try {
             const token = localStorage.getItem("access_token");
-            await axios.delete(`http://127.0.0.1:8000/app1/schedule-email/${id}/`, {
+            await axios.delete(`${baseURL}/app1/schedule-email/${id}/`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             toast.success("Email deleted successfully.");
@@ -45,7 +46,7 @@ const ScheduledEmails = () => {
     const handleUpdate = async () => {
         try {
             const token = localStorage.getItem("access_token");
-            await axios.put(`http://127.0.0.1:8000/app1/schedule-email/${editingEmail.id}/`, editingEmail, {
+            await axios.put(`${baseURL}/app1/schedule-email/${editingEmail.id}/`, editingEmail, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             toast.success("Email updated successfully.");

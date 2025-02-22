@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
+import baseURL from "../config";
 
 const ScheduleEmail = () => {
     const navigate = useNavigate();
@@ -25,7 +26,7 @@ const ScheduleEmail = () => {
         if (!accessToken || isTokenExpired(accessToken)) {
             try {
                 console.log("Access token expired, refreshing...");
-                const response = await axios.post('http://127.0.0.1:8000/app1/refresh/', {
+                const response = await axios.post(`${baseURL}/app1/refresh/`, {
                     refresh: refreshToken,
                 });
                 accessToken = response.data.access;
@@ -68,7 +69,7 @@ const ScheduleEmail = () => {
             console.log("Formatted Data:", formattedData);
 
             const response = await axios.post(
-                'http://127.0.0.1:8000/app1/schedule-email/',
+                `${baseURL}/app1/schedule-email/`,
                 formattedData,
                 {
                     headers: { Authorization: `Bearer ${token}` }

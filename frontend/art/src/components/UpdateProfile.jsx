@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import baseURL from "../config";
 
 function UpdateProfile() {
     const navigate = useNavigate();
@@ -26,7 +27,7 @@ function UpdateProfile() {
 
     try {
       const token = localStorage.getItem("access_token");
-      await axios.patch("http://127.0.0.1:8000/app1/profile1/update-picture/", formData, {
+      await axios.patch(`${baseURL}/app1/profile1/update-picture/`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,

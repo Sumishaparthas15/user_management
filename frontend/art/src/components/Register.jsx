@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import DOMPurify from "dompurify"; 
-
+import baseURL from "../config";
 function Register() {
   const navigate = useNavigate();
   const [image, setImage] = useState(null);
@@ -37,7 +37,7 @@ function Register() {
     }
 
     try {
-      const response = await axios.post("http://127.0.0.1:8000/app1/register/", formDataObject, {
+      const response = await axios.post(`${baseURL}/app1/register/`, formDataObject, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       console.log(response.data);
@@ -52,7 +52,7 @@ function Register() {
 
   const handleOTPSubmit = async () => {
     try {
-      const response = await axios.post("http://127.0.0.1:8000/app1/verify-otp/", { email, otp });
+      const response = await axios.post(`${baseURL}/app1/verify-otp/`, { email, otp });
       console.log(response.data);
       alert("OTP Verified Successfully. You can now log in.");
       setShowOTPModal(false);

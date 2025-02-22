@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import baseURL from "../config";
 
 function Login() {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ function Login() {
     e.preventDefault();
     try {
         const response = await axios.post(
-            'http://127.0.0.1:8000/app1/login/', 
+            `${baseURL}/app1/login/`, 
             formData, 
             {
                 headers: { 'Content-Type': 'application/json' },

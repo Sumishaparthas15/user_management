@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import ScheduledEmails from "./ScheduledEmails";
+import baseURL from "../config";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ const Profile = () => {
       }
 
       try {
-        const response = await axios.get("http://127.0.0.1:8000/app1/profile/", {
+        const response = await axios.get(`${baseURL}/app1/profile/`, {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
 
@@ -34,7 +35,7 @@ const Profile = () => {
   const handleRefreshToken = async () => {
     try {
       const refreshToken = localStorage.getItem("refresh_token");
-      const response = await axios.post("http://127.0.0.1:8000/app1/refresh/", {
+      const response = await axios.post(`${baseURL}/app1/refresh/`, {
         refresh: refreshToken,
       });
 
@@ -50,7 +51,7 @@ const Profile = () => {
   const handleLogout = async () => {
     try {
       const refreshToken = localStorage.getItem("refresh_token");
-      await axios.post("http://127.0.0.1:8000/app1/logout/", { refresh_token: refreshToken });
+      await axios.post(`${baseURL}/app1/logout/`, { refresh_token: refreshToken });
 
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");

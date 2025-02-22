@@ -10,6 +10,7 @@ SECRET_KEY = 'django-insecure-(m0eu-cl#c8ywwk9vw9)c+=)apx@e1_ztjxj8f7%!nu8o%f1h0
 DEBUG = True
 
 ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["your-ec2-public-ip", "your-domain.com", "localhost", "127.0.0.1"]
 
 
 # Application definition
@@ -151,7 +152,10 @@ AUTHENTICATION_BACKENDS = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000", 
+    "http://51.21.46.197:3000" 
 ]
+CORS_ALLOWED_ORIGINS.append("http://51.21.46.197:3000")
+
 CORS_ALLOW_ALL_ORIGINS = True 
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
